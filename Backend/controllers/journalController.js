@@ -1,14 +1,14 @@
 import Journal from '../schema/journalSchema.js';
 import express from 'express';
 import cors from 'cors';
-import main from '../config/geminiCOnfig.js';
+import {processJournal} from '../config/geminiCOnfig.js';
 const router = express.Router ();
 
 export const JournalPost = async (req, res) => {
   console.log ('hii');
   console.log (req.body);
 
-  let responseFromGenAI = await main (req.body.content);
+  let responseFromGenAI = await processJournal (req.body.content);
   let sendtoDB = new Journal ({
     content: req.body.content,
     emotion: responseFromGenAI.emotion,
