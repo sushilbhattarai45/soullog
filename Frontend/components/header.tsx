@@ -1,6 +1,11 @@
 import { Sparkles } from "lucide-react"
-
+import { Button } from "./ui/button"
+import { useContext } from "react"
+import { UserContext } from "./context/authContext"
+import { JournalEntryContext } from "./context/journalContext"
 export function Header() {
+  const {setIsloggedIn} = useContext(UserContext)
+  const {getEntries, setEntries} = useContext(JournalEntryContext)
   return (
     <nav className="border-b bg-white sticky top-0 z-50 shadow-sm flex-shrink-0">
       <div className="container mx-auto px-6 py-2.5">
@@ -21,6 +26,17 @@ export function Header() {
               year: "numeric",
             })}
           </div>
+          <div>
+        <Button
+        onClick={()=>{
+localStorage.removeItem("userData")
+setIsloggedIn(false)
+setEntries([])
+window.location.reload()
+        }}
+        >
+            Logout
+        </Button></div>
         </div>
       </div>
     </nav>

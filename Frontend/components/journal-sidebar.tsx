@@ -7,34 +7,34 @@ import { EmotionBadge, type EmotionKey } from "./emotion-badge"
 import { QuoteRotator } from "./quote-rotator"
 
 export interface JournalEntry {
-  id: string
+ id: string
   content: string
-  emotion: EmotionKey
+  emotion: string
   aiReview: string
   timestamp: number
-  author: string
-  likes: number
-  userId:number
-  isAnonymous?: boolean
+  userId?: string
 }
 
 interface JournalSidebarProps {
-  entries: JournalEntry[]
+  data: JournalEntry[]
   onNewJournal: () => void
   onSelectEntry: (entry: JournalEntry) => void
   selectedEntryId?: string
 }
 
-export function JournalSidebar({ entries, onNewJournal, onSelectEntry, selectedEntryId }: JournalSidebarProps) {
-  const calculateStreak = () => {
-    if (entries.length === 0) return 0
+export function JournalSidebar({ data, onNewJournal, onSelectEntry, selectedEntryId }: JournalSidebarProps) {
+ let sortedData = data.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
-    const sortedEntries = [...entries].sort((a, b) => b.timestamp - a.timestamp)
+ console.log(sortedData)
+  const calculateStreak = () => {
+    if (data.length === 0) return 0
+
+    const sorteddata = [...data].sort((a, b) => b.timestamp - a.timestamp)
     let streak = 0
     const currentDate = new Date()
     currentDate.setHours(0, 0, 0, 0)
 
-    for (const entry of sortedEntries) {
+    for (const entry of sorteddata) {
       const entryDate = new Date(entry.timestamp)
       entryDate.setHours(0, 0, 0, 0)
 
@@ -73,14 +73,15 @@ export function JournalSidebar({ entries, onNewJournal, onSelectEntry, selectedE
         <div className="p-3 space-y-2">
           <h3 className="text-xs font-semibold text-foreground px-2 mb-3 uppercase tracking-wider">Past Journals</h3>
 
-          {entries.length === 0 ? (
+          {data.length === 0 ? (
             <Card className="p-6 text-center border-dashed bg-muted/30">
               <BookOpen className="h-10 w-10 text-muted-foreground/50 mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">No entries yet</p>
+              <p className="text-xs text-muted-foreground">No data yet</p>
               <p className="text-xs text-muted-foreground mt-1">Start writing to see your history</p>
             </Card>
           ) : (
-            entries.map((entry, index) => (
+ sortedData.map
+            ((entry, index) => (
               <div key={entry.id}>
                 <Card
                   className={`p-3 cursor-pointer transition-all duration-200 hover:shadow-md ${
@@ -102,7 +103,7 @@ export function JournalSidebar({ entries, onNewJournal, onSelectEntry, selectedE
                     </p>
                   </div>
                 </Card>
-                {index < entries.length - 1 && <div className="h-px bg-gray-100 my-1.5" />}
+                {index < data.length - 1 && <div className="h-px bg-gray-100 my-1.5" />}
               </div>
             ))
           )}

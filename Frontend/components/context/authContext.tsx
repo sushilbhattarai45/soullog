@@ -3,37 +3,39 @@
 import {createContext, useState, ReactNode} from 'react'
 
 
-
 interface User{
-    userId:string
-    name:string,
-    email:string,
+    id:string
+    username:string,
 }
 interface UserContextType{
-    data: User[]
+    data: User | null
     setUser : (data:User)=>void
     getUser :()=>void
+    isloggedIn: boolean
+    setIsloggedIn: (isloggedIn:boolean)=>void
 }
 
 export const UserContext = createContext<UserContextType>({
-    data:[],
+    data:null,
     setUser:()=>{},
-    getUser: () => {}
+    getUser: () => {},
+     isloggedIn: false
+    , setIsloggedIn: () => {}
 })
 
 
-export const AuthContextProvider=({children}:{children:ReactNode})=>
+export const AuthContextProvider= ({children}:{children:ReactNode})=>
 {
-
-    const [data, setData] = useState<User[]>([])
+  let  userData =  localStorage.getItem("userData")
+ const [ isloggedIn, setIsloggedIn] = useState(!!userData)
+    const [data, setData] = useState<User |null>(userData ? JSON.parse(userData) : null)
     const setUser=(user:User)=>{
-        setData([...data,user])
+    setData(user)
     }
     const getUser=()=>{
-        //fetch user from backend
     }
     return(
-        <UserContext.Provider value={{data,setUser,getUser}}>
+        <UserContext.Provider value={{data,setUser, getUser, isloggedIn, setIsloggedIn}}>
             {children}
         </UserContext.Provider>
     )

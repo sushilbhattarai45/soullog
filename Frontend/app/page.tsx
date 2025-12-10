@@ -16,56 +16,101 @@ import { RecommendationsPanel } from "@/components/recommendations-panel"
 import type { EmotionKey } from "@/components/emotion-badge"
 import axios from "axios"
 import { JournalEntryContext } from "@/components/context/journalContext"
-
+import { toast, Toaster } from "sonner"
+import { UserContext } from "@/components/context/authContext"
+import { url } from "inspector"
+interface MusicRecommendation{
+  title: string
+  artist: string
+  url: string
+}
 export default function FeelDiary() {
   let {entries, setEntries,getEntries} = useContext (JournalEntryContext);
-  const [currentView, setCurrentView] = useState<"landing" | "dashboard">("landing")
+  let {
+    data,
+    setUser,
+    getUser,
+    isloggedIn,
+  } = useContext (UserContext);
+
+  const [loggedIn, setLoggedIn] = useState(true)
+  const [currentView, setCurrentView] = useState<"landing" | "dashboard">(isloggedIn ? "dashboard" : "landing")
   const [myEntries, setMyEntries] = useState<JournalEntry[]>([])
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null)
   const [showSignIn, setShowSignIn] = useState(false)
   const [signInMode, setSignInMode] = useState<"regular" | "anonymous">("regular")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+const [musicRecommendation, setMusicRecommendation] = useState<MusicRecommendation>({title:"",artist:"", url:""})
+
 
   useEffect(() => {
-    const stored = localStorage.getItem("feelDiaryEntries")
-    if (stored) {
-      setMyEntries(JSON.parse(stored))
-    }
-    alert(JSON.stringify(entries));
-    // getAllJournals()
-        getEntries()
-  }, [])
+   if (entries.length > 0)
+   {
+    setMyEntries(entries);
+   }
 
-  useEffect(() => {
-   alert(JSON.stringify(entries));
   }, [entries])
 
-  const getAllJournals = async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/api/journal/getAll');
-      console.log('Journals fetched:', response.data);
-      // You can set the fetched data to state if needed
-      // setMyEntries(response.data);
-    } catch (error) {
-      console.error('Error fetching journals:', error);
-    }
-  }
 
-  useEffect(() => {
-    if (myEntries.length > 0) {
-      localStorage.setItem("feelDiaryEntries", JSON.stringify(myEntries))
-    }
-  }, [myEntries])
 
-  const handleSignIn = () => {
+  const handleSignIn =async () => {
     if (!username.trim() || !password.trim()) return
-    localStorage.setItem("feelDiaryUser", JSON.stringify({ username, isAnonymous: signInMode === "anonymous" }))
-    setCurrentView("dashboard")
-    setShowSignIn(false)
-    setUsername("")
-    setPassword("")
+    // localStorage.setItem("feelDiaryUser", JSON.stringify({ username, isAnonymous: signInMode === "anonymous" }))
+try{
+    let response = await axios.post ('http://localhost:5000/api/auth/login', 
+  {username,
+  password
+   });    
+if(response.status===200 )
+{
+
+toast(
+  "Login Successful",
+  { 
+    description: "Welcome back! You have successfully logged in.",
+    position: "top-center",
+    duration: 4000,
+    type: "success",
+  } 
+) 
+getEntries();
+setUser({id: response.data.user._id, username: response.data.user.username})
+setLoggedIn(true);
+localStorage.setItem("userData", JSON.stringify({
+  id: response.data.user,
+  username: username
+}));
+getEntries()
+setLoggedIn(true);
+setCurrentView("dashboard")
+}
+ }
+  catch (error){
+toast(
+  "Login Failed",
+  { 
+    description: "Please check your credentials and try again.",
+    
+    position: "top-center",
+    duration: 4000,
+    type: "error",
   }
+)
+ 
+  }
+    // setCurrentView("dashboard")
+    setShowSignIn(false)
+    }
+
+useEffect(() => {
+  if (!isloggedIn)
+  {
+    setCurrentView("landing")
+
+  }
+  
+}, [isloggedIn]);
 
   const handleSaveEntry = async (content: string, emotion: EmotionKey, aiReview: string, isAnonymous: boolean) => {
     const newEntry: JournalEntry = {
@@ -74,21 +119,49 @@ export default function FeelDiary() {
       emotion,
       aiReview,
       timestamp: Date.now(),
-      author: isAnonymous ? "Anonymous" : "You",
-      likes: 0,
-      userId:11,
-      isAnonymous,
-    }
-    setMyEntries([newEntry, ...myEntries])
+      userId : data?.id,
+
+        }
     setSelectedEntry(null)
     let postData = await axios.post ('http://localhost:5000/api/journal/post', newEntry);
-
+    alert(JSON.stringify(postData.data));
+setEntries([...entries,newEntry]);
+setMusicRecommendation(postData.data.song);
 
   }
 
   const handleNewJournal = () => {
     setSelectedEntry(null)
   }
+
+
+  const handleSignUp = async() => {
+    if (!username.trim() || !password.trim()) return
+    // localStorage.setItem("feelDiaryUser", JSON.stringify({ username, isAnonymous: signInMode === "anonymous" }))
+    // setCurrentView("dashboard")
+    // setShowSignIn(false)
+
+
+    const register= await axios.post ('http://localhost:5000/api/auth/register', 
+    {username,
+    password
+     });
+toast(
+  "Registration Successful",
+  { 
+    description: "Your account has been created. Please log in.",
+    
+    position: "top-center",
+    duration: 4000,
+    type: "success",
+  }
+
+) 
+    setShowSignIn(false)
+    setUsername("")
+    setPassword("")
+
+    }
 
   if (currentView === "landing") {
     return (
@@ -108,7 +181,12 @@ export default function FeelDiary() {
                 Features
               </a>
               <a href="#about" className="text-sm font-medium hover:text-primary transition-colors">
-                About
+                {
+                data? 
+                `Welcome, ${data?.username}`
+                :
+                "About"
+                }
               </a>
               <Button
                 onClick={() => setShowSignIn(true)}
@@ -122,7 +200,14 @@ export default function FeelDiary() {
 
         {/* Sign-in Modal */}
         {showSignIn && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div 
+          style={{
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+          }}
+          className="fixed align  bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300" >
             <Card className="w-full max-w-md shadow-2xl border-2 animate-in zoom-in-95 duration-300">
               <CardHeader>
                 <CardTitle className="text-2xl">Welcome to FeelDiary</CardTitle>
@@ -133,11 +218,11 @@ export default function FeelDiary() {
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="regular" className="gap-2">
                       <LogIn className="h-4 w-4" />
-                      Regular
+                      LogIn
                     </TabsTrigger>
                     <TabsTrigger value="anonymous" className="gap-2">
                       <EyeOff className="h-4 w-4" />
-                      Anonymous
+                      SignUp
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="regular" className="space-y-4 mt-6">
@@ -209,12 +294,12 @@ export default function FeelDiary() {
                     Cancel
                   </Button>
                   <Button
-                    onClick={handleSignIn}
+                    onClick={signInMode === "regular" ? handleSignIn : handleSignUp}
                     disabled={!username.trim() || !password.trim()}
                     className="flex-1 bg-primary hover:bg-primary/90 text-white font-medium"
                   >
                     <UserPlus className="mr-2 h-4 w-4" />
-                    Sign In
+                    {signInMode === "regular" ? "Log In" : "Sign Up"}
                   </Button>
                 </div>
               </CardContent>
@@ -252,7 +337,7 @@ export default function FeelDiary() {
               </Button>
             </div>
 
-            <div id="features" className="grid md:grid-cols-3 gap-6 mt-20">
+            {/* <div id="features" className="grid md:grid-cols-3 gap-6 mt-20">
               <Card className="hover:shadow-lg transition-all duration-300 bg-white border">
                 <CardHeader className="space-y-4">
                   <div className="h-14 w-14 rounded-lg bg-primary flex items-center justify-center">
@@ -286,11 +371,11 @@ export default function FeelDiary() {
                   </CardDescription>
                 </CardHeader>
               </Card>
-            </div>
+            </div> */}
           </div>
         </main>
 
-        <footer className="border-t mt-20 py-8 bg-white">
+        <footer className="border-t py-8 bg-white">
           <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
             <p className="text-lg font-semibold text-foreground mb-2 font-[family-name:var(--font-cursive)]">
               Feel<span className="text-primary">Diary</span>
@@ -311,10 +396,10 @@ export default function FeelDiary() {
         {/* Left Panel - Past Journals with streak tracker */}
         <aside className="w-80 border-r hidden lg:flex flex-col overflow-hidden">
           <JournalSidebar
-            entries={myEntries}
             onNewJournal={handleNewJournal}
             onSelectEntry={setSelectedEntry}
             selectedEntryId={selectedEntry?.id}
+            data={myEntries}
           />
         </aside>
 

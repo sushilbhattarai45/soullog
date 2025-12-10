@@ -8,6 +8,7 @@ const journalSchema = new Schema ({
   isAnonymous: {type: Boolean, default: false},
   timestamp: {type: Date, default: Date.now},
   userId: {type: String, required: true},
+  song: {type: Object, required: true},
 });
 const Journal = mongoose.model ('Journal', journalSchema);
 export default Journal;

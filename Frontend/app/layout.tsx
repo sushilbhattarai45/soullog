@@ -4,6 +4,8 @@ import { Poppins, Geist_Mono, Dancing_Script } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import { JournalContextProvider } from "@/components/context/journalContext"
+import { Toaster } from "@/components/ui/sonner"
+import { AuthContextProvider } from "@/components/context/authContext"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -31,9 +33,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${poppins.variable} ${dancingScript.variable} font-sans antialiased`}>
+        <AuthContextProvider>
         <JournalContextProvider>
+                  <Toaster />
+
           {children}
         </JournalContextProvider>
+        </AuthContextProvider>
       </body>
     </html>
   )

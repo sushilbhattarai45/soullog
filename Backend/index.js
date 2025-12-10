@@ -3,6 +3,7 @@ import cors from 'cors';
 import journalRoutes from './routes/journalRoutes.js';
 import connectDb from './db/connectDb.js';
 import AuthRoutes from './routes/authRoutes.js';
+import main from './config/geminiCOnfig.js';
 const app = express ();
 app.use (cors ());
 app.use (express.json ());
@@ -14,3 +15,4 @@ app.listen (port, () => {
 
 app.use ('/api/journal', journalRoutes);
 app.use ('/api/auth', AuthRoutes);
+// main ("I spent the afternoon reading in the park. The sun was warm, and I felt completely relaxed. It’s nice to have quiet moments to myself")

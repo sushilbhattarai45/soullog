@@ -1,6 +1,6 @@
 'use client'
-import {createContext, useState, ReactNode } from "react"
-
+import {createContext, useState, ReactNode,useContext, useEffect } from "react"
+import { UserContext } from "./authContext"
 import axios from "axios"
 interface JournalEntry {
   id: string
@@ -25,12 +25,22 @@ export const JournalEntryContext = createContext<JournalContextType>({
 })
 
 export const JournalContextProvider =({children}:{children:ReactNode})=>{
+    const {isloggedIn,data} = useContext(UserContext)
     const [entries, setEntries] = useState<JournalEntry[]>([])
     const getEntries = async () => {
-      const response = await axios.get('http://localhost:5000/api/journal/getAll');
-      console.log("hio")
-    setEntries(response.data);
+        if(data?.id){
+      const response = await axios.post('http://localhost:5000/api/journal/getOneUserEntries',{
+     id : data?.id
     }
+    );
+     
+    setEntries(response.data);
+        }
+    }
+    useEffect(() => {
+        getEntries();
+    }, [data?.id]);
+
     return (
         <JournalEntryContext.Provider value={{entries, setEntries, getEntries}}>
             {children}
