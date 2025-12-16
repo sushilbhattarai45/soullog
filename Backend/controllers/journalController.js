@@ -6,7 +6,7 @@ const router = express.Router ();
 
 export const JournalPost = async (req, res) => {
   console.log ('hii');
-  console.log (req.body);
+  // console.log (req.body);
 
   let responseFromGenAI = await processJournal (req.body.content);
   let sendtoDB = new Journal ({
@@ -17,6 +17,8 @@ export const JournalPost = async (req, res) => {
     userId: req.body.userId,
     song: responseFromGenAI.song,
   });
+
+  console.log(responseFromGenAI);
   let response = await sendtoDB.save ();
 
   res.send ({

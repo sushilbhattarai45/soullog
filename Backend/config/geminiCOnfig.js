@@ -147,8 +147,7 @@ export async function processJournal(journalText) {
       feedback: analysis.ai_feedback,
     };
   } catch (err) {
-    console.error("Error:", err);
-    throw err;
+    console.error("Error:");
   }
 }
 

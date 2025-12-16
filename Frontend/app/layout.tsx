@@ -6,6 +6,7 @@ import "./globals.css"
 import { JournalContextProvider } from "@/components/context/journalContext"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthContextProvider } from "@/components/context/authContext"
+import { SongContextProvider } from "@/components/context/songContext"
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -34,11 +35,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${poppins.variable} ${dancingScript.variable} font-sans antialiased`}>
         <AuthContextProvider>
+          <SongContextProvider>
         <JournalContextProvider>
                   <Toaster />
 
           {children}
         </JournalContextProvider>
+        </SongContextProvider>
         </AuthContextProvider>
       </body>
     </html>

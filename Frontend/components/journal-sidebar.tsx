@@ -82,7 +82,7 @@ export function JournalSidebar({ data, onNewJournal, onSelectEntry, selectedEntr
           ) : (
  sortedData.map
             ((entry, index) => (
-              <div key={entry.id}>
+              <div key={index}>
                 <Card
                   className={`p-3 cursor-pointer transition-all duration-200 hover:shadow-md ${
                     selectedEntryId === entry.id

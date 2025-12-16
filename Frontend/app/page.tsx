@@ -18,7 +18,6 @@ import axios from "axios"
 import { JournalEntryContext } from "@/components/context/journalContext"
 import { toast, Toaster } from "sonner"
 import { UserContext } from "@/components/context/authContext"
-import { url } from "inspector"
 interface MusicRecommendation{
   title: string
   artist: string

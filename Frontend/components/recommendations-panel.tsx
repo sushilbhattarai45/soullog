@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useContext } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Music, Play, Pause, SkipForward, SkipBack } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
+import { SongContext } from "@/components/context/songContext"
 
 declare global {
   interface Window {
@@ -17,24 +18,21 @@ type Track = {
   id: number
   title: string
   artist: string
-  youtubeId: string
+  youtube_url: string
 }
 
-const musicRecommendations: Track[] = [
-  { id: 1, title: "Golden Hour", artist: "JVKE", youtubeId: "hDKCxebp88A" },
-  { id: 2, title: "Sunflower", artist: "Post Malone", youtubeId: "chn_GHs_Hy8" },
-  { id: 3, title: "Let's Go Home Together", artist: "Ella Henderson", youtubeId: "Rzp19Fpmuc" },
-  { id: 4, title: "Good Days", artist: "SZA", youtubeId: "hDKCxebp88A" },
-  { id: 5, title: "Blinding Lights", artist: "The Weeknd", youtubeId: "uB_jU0gGrSY" },
-]
-
 export function RecommendationsPanel() {
+  const { song } = useContext(SongContext) // dynamic songs
   const [currentIndex, setCurrentIndex] = useState<number | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const playerRef = useRef<any>(null)
   const apiLoadedRef = useRef(false)
 
-  // Load YouTube API once
+  const getVideoId = (url: string) => {
+    const match = url.match(/v=([a-zA-Z0-9_-]+)/)
+    return match ? match[1] : ""
+  }
+
   useEffect(() => {
     if (apiLoadedRef.current) return
     apiLoadedRef.current = true
@@ -44,12 +42,12 @@ export function RecommendationsPanel() {
     document.body.appendChild(tag)
 
     window.onYouTubeIframeAPIReady = () => {
-      console.log("YT API Ready")
-      if (currentIndex !== null) initPlayer(musicRecommendations[currentIndex].youtubeId)
+      if (currentIndex !== null && song.length > 0) {
+        initPlayer(getVideoId(song[currentIndex].youtube_url))
+      }
     }
-  }, [])
+  }, [song])
 
-  // Initialize or load new video
   const initPlayer = (videoId: string) => {
     if (!window.YT || !window.YT.Player) return
 
@@ -65,14 +63,9 @@ export function RecommendationsPanel() {
           controls: 0,
         },
         events: {
-          onReady: (event: any) => {
-            event.target.playVideo()
-            setIsPlaying(true)
-          },
+          onReady: () => setIsPlaying(true),
           onStateChange: (event: any) => {
-            if (event.data === window.YT.PlayerState.ENDED) {
-              handleNext()
-            }
+            if (event.data === window.YT.PlayerState.ENDED) handleNext()
           },
         },
       })
@@ -82,33 +75,33 @@ export function RecommendationsPanel() {
     }
   }
 
-  const handlePlayPause = () => {
-    if (!playerRef.current) return
-    if (isPlaying) {
-      playerRef.current.pauseVideo()
-      setIsPlaying(false)
-    } else {
-      playerRef.current.playVideo()
-      setIsPlaying(true)
+  const handlePlayPause = (index: number) => {
+    if (currentIndex !== index) {
+      setCurrentIndex(index)
+      initPlayer(getVideoId(song[index].youtube_url))
+    } else if (playerRef.current) {
+      if (isPlaying) {
+        playerRef.current.pauseVideo()
+        setIsPlaying(false)
+      } else {
+        playerRef.current.playVideo()
+        setIsPlaying(true)
+      }
     }
-  }
-
-  const handleTrack = (index: number) => {
-    setCurrentIndex(index)
-    initPlayer(musicRecommendations[index].youtubeId)
   }
 
   const handleNext = () => {
     if (currentIndex === null) return
-    const nextIndex = (currentIndex + 1) % musicRecommendations.length
-    handleTrack(nextIndex)
+    const nextIndex = (currentIndex + 1) % song.length
+    setCurrentIndex(nextIndex)
+    initPlayer(getVideoId(song[nextIndex].youtube_url))
   }
 
   const handlePrevious = () => {
     if (currentIndex === null) return
-    const prevIndex =
-      (currentIndex - 1 + musicRecommendations.length) % musicRecommendations.length
-    handleTrack(prevIndex)
+    const prevIndex = (currentIndex - 1 + song.length) % song.length
+    setCurrentIndex(prevIndex)
+    initPlayer(getVideoId(song[prevIndex].youtube_url))
   }
 
   return (
@@ -118,7 +111,6 @@ export function RecommendationsPanel() {
         <div id="yt-player" />
       </div>
 
-      {/* Panel Content */}
       <div className="h-[100%] border-b overflow-hidden flex flex-col">
         <div className="p-3 border-b flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -128,59 +120,56 @@ export function RecommendationsPanel() {
         </div>
 
         <div className="flex-1 overflow-y-auto scrollbar-thin p-3 space-y-2">
-          {musicRecommendations.map((track, index) => (
+          {song.map((track, index) => (
             <motion.div
-              key={track.id}
+              key={index}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.08 }}
+              transition={{ delay: index * 0.05 }}
             >
-              <Card className="bg-white border hover:shadow-md transition-all duration-200 hover:border-primary/30 group">
-                <CardContent className="p-2.5">
+              <Card className="bg-white border hover:shadow-lg transition-shadow duration-200 group">
+                <CardContent className="p-2.5 flex flex-col gap-2">
                   <div className="flex items-start gap-2.5 mb-1.5">
                     <div className="h-9 w-9 rounded-lg bg-chart-3 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
                       <Music className="h-4 w-4 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-xs truncate mb-0.5">{track.title}</p>
+                      <p className="font-medium text-xs truncate">{track.title}</p>
                       <p className="text-xs text-muted-foreground truncate">{track.artist}</p>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
+                  {/* Inline controls */}
+                  {currentIndex === index ? (
+                    <div className="flex items-center justify-between mt-2 gap-1">
+                      <Button size="sm" onClick={handlePrevious} className="flex-1 h-8 border hover:border-primary/50">
+                        <SkipBack className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handlePlayPause(index)}
+                        className="flex-1 h-8 border hover:border-primary/50"
+                      >
+                        {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </Button>
+                      <Button size="sm" onClick={handleNext} className="flex-1 h-8 border hover:border-primary/50">
+                        <SkipForward className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
                     <Button
                       size="sm"
-                      className="flex-1 h-8 bg-primary/10 hover:bg-primary/20 text-primary border-0 text-xs"
-                      onClick={() => handleTrack(index)}
+                      className="w-full mt-2 h-8 bg-primary/10 hover:bg-primary/20 text-primary border-0 text-xs"
+                      onClick={() => handlePlayPause(index)}
                     >
-                      <Play className="h-4 w-3 mr-1" />
-                      Play
+                      <Play className="h-4 w-3 mr-1" /> Play
                     </Button>
-                  </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
-
-        {/* Playback Controls */}
-        {currentIndex !== null && (
-          <div className="p-3 border-t flex items-center justify-between space-x-2">
-            <Button size="sm" onClick={handlePrevious}>
-              <SkipBack className="h-4 w-4" />
-            </Button>
-            <Button size="sm" onClick={handlePlayPause}>
-              {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-            </Button>
-            <Button size="sm" onClick={handleNext}>
-              <SkipForward className="h-4 w-4" />
-            </Button>
-            <p className="text-xs truncate">
-              Now Playing: {musicRecommendations[currentIndex].title} -{" "}
-              {musicRecommendations[currentIndex].artist}
-            </p>
-          </div>
-        )}
       </div>
     </div>
   )
