@@ -2,7 +2,7 @@
 import { GoogleGenAI } from "@google/genai";
 import YTMusic from "ytmusic-api";
 import dotenv from "dotenv";
-
+import journalAnalysisSchema from "./analysisSchema.js";
 dotenv.config();
 
 // ----------------------------
@@ -123,44 +123,87 @@ export async function preloadMoodSongs(mood, limit = 5) {
 // ----------------------------
 // Gemini analysis prompt
 const analysisPrompt = `
-IMPORTANT:
-- Return VALID JSON ONLY
-- Use double quotes for ALL keys and values
-- No trailing commas
-- No text before or after JSON
+SYSTEM RULES (MANDATORY — DO NOT VIOLATE):
+
+- Output MUST be a single valid JSON object
+- Use DOUBLE QUOTES for all keys and all string values
+- Do NOT include markdown, comments, or explanations
+- Do NOT include trailing commas
+- Do NOT include extra keys
+- Do NOT omit required keys
+- Output NOTHING except the JSON object
+
+--------------------------------------------------
 
 You are an AI assistant for a teen-friendly journaling app.
 
-Tasks:
+ALLOWED EMOTIONS (choose EXACTLY ONE and ONLY from this list):
+"happy"
+"sad"
+"angry"
+"anxious"
+"excited"
+"calm"
+"neutral"
+"mixed"
+"peaceful"
+"nostalgic"
+"motivated"
 
-1. Detect PRIMARY emotion (choose one):
-"happy", "sad", "motivated", "anxious", "peaceful", "nostalgic", "mixed"
+--------------------------------------------------
 
-2. Recommend 5–6 REAL, POPULAR English pop songs (2017+):
-- sad/anxious → uplifting, hopeful, motivating
-- happy → joyful, upbeat
-- motivated → energetic, inspiring
-- peaceful → calm, soothing
-- nostalgic → warm, reflective
-- mixed → gently uplifting
+TASKS:
 
-3. Each song MUST include:
-- title
-- artist
-- reason
+1. Analyze the journal entry and select ONE primary emotion
+   - The emotion value MUST EXACTLY MATCH one of the allowed strings above
 
-4. Write short supportive AI feedback (2–3 sentences max)
+2. Recommend BETWEEN 5 AND 6 real, popular, English-language pop songs:
+   - Released in 2017 or later
+   - Widely known / mainstream
+   - Must exist on YouTube
+   - MUST follow emotional logic:
 
-RETURN THIS EXACT JSON SCHEMA:
+   Emotional Logic:
+   - sad OR anxious OR angry → uplifting, hopeful, motivating
+   - happy OR excited → joyful, upbeat
+   - motivated → energetic, inspiring
+   - calm OR peaceful → soothing, relaxing
+   - nostalgic → warm, reflective, positive
+   - mixed OR neutral → emotionally balanced, gently uplifting
+
+3. Each song object MUST include ALL of the following:
+   - "title": non-empty string
+   - "artist": non-empty string
+   - "reason": short explanation (1 sentence)
+
+4. Write an AI feedback message:
+   - 2–3 sentences ONLY
+   - Friendly, supportive, teen-safe
+   - No romance
+   - No therapy, diagnosis, or psychological advice
+
+--------------------------------------------------
+
+OUTPUT FORMAT (STRICT — MUST MATCH EXACTLY):
 
 {
-  "emotion": "string",
+  "emotion": "one of the allowed emotion strings",
   "song_recommendation": [
-    { "title": "string", "artist": "string", "reason": "string" }
+    {
+      "title": "string",
+      "artist": "string",
+      "reason": "string"
+    }
   ],
   "ai_feedback": "string"
 }
+
+IMPORTANT:
+- "song_recommendation" MUST be an array
+- The array MUST contain at least 5 items
+- If ANY rule cannot be followed, still return valid JSON that best follows the rules
 `;
+
 
 // ----------------------------
 // Analyze journal
@@ -168,6 +211,7 @@ async function analyzeJournal(journalText) {
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: analysisPrompt + `\n\nJournal Entry:\n${journalText}`,
+    schema: journalAnalysisSchema,
   });
 
   const rawText =

@@ -168,20 +168,37 @@ useEffect(() => {
 )
     setSelectedEntry(null)
     let postData = await axios.post ('http://localhost:5000/api/journal/post', newEntry);
-    console.log(JSON.stringify(postData?.data.entryData));
+    console.log(JSON.stringify(postData?.data.entryData.aiReview));
 
  setEntries([
    {
 
     ...postData?.data?.entryData,
     aiReview: postData?.data?.entryData?.aiReview,
-    emotion: postData?.data?.emotion,
+    emotion: postData?.data?.entryData?.emotion,
 
   }
   ,
   ...entries,
  
 ]);
+setMyEntries([
+  {
+
+   ...postData?.data?.entryData,
+   aiReview: postData?.data?.entryData?.aiReview,
+   emotion: postData?.data?.entryData?.emotion,
+
+ }
+ ,
+ ...myEntries,
+
+]);
+newEntry.aiReview = postData?.data?.entryData.aiReview;
+    const updatedEntries = [newEntry, ...entries]
+    setEntries(updatedEntries)
+    console.log("Journal Entries after adding new entry:");
+console.log(updatedEntries);
 
 // cm
 console.log(song)

@@ -11,6 +11,8 @@ export const emotions = {
   'mixed' : { emoji: "😕", color: "bg-indigo-50 text-indigo-700 border-indigo-200", label: "Mixed" },
   'peaceful': { emoji: "🕊️", color: "bg-teal-50 text-teal-700 border-teal-200", label: "Peaceful" },
   'nostalgic': { emoji: "📻", color: "bg-amber-50 text-amber-700 border-amber-200", label: "Nostalgic" },
+'motivated': { emoji: "💪", color: "bg-lime-50 text-lime-700 border-lime-200", label: "Motivated" },
+
 }
 
 export type EmotionKey = keyof typeof emotions
