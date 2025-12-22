@@ -288,7 +288,7 @@ export function RecommendationsPanel() {
 
       {/* Bottom centered controller */}
       <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-30">
-        <div className="max-w-2xl w-full mx-auto bg-white/80 backdrop-blur-sm border shadow-sm rounded-md p-3 h-20">
+        <div className="max-w-2xl min-w-2xl w-full mx-auto bg-white/80 backdrop-blur-sm border shadow-sm rounded-md p-3 h-20">
           <div className="flex items-center gap-4 h-full">
             <div className="flex-1 min-w-0 overflow-hidden">
               <div className="flex items-center gap-3">
