@@ -6,6 +6,14 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "https://feeldiary-backend.vercel.app/api/:path*", // proxy to your API
+      },
+    ];
+  },
+};
 
-export default nextConfig
+export default nextConfig;
