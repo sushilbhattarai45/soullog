@@ -195,16 +195,16 @@ export default function LandingPage() {
           </div>
           <div className="flex items-center gap-6">
             <a
-              href="#features"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              Features
-            </a>
-            <a
               href="#about"
               className="text-sm font-medium hover:text-primary transition-colors"
             >
-              {data ? `Welcome, ${data?.username}` : "About"}
+              {data ? `Welcome, ${data?.username}` : ""}
+            </a>
+            <a
+              href="https://github.com/sushilbhattarai45/feeldiary"
+              className="text-sm font-medium hover:text-primary transition-colors"
+            >
+              Github
             </a>
             <Button
               onClick={() => setShowSignIn(true)}
@@ -493,7 +493,13 @@ export default function LandingPage() {
         </div>
       )}
 
-      <main className="container mx-auto px-4 py-20">
+      <main
+        style={{
+          height: "70vh",
+          alignContent: "center",
+        }}
+        className="container mx-auto px-4 py-20"
+      >
         <div className="max-w-5xl mx-auto text-center space-y-8 animate-in slide-in-from-bottom-8 duration-700">
           <div className="space-y-6">
             <Badge
@@ -501,7 +507,7 @@ export default function LandingPage() {
               className="px-4 py-2 text-sm font-medium border"
             >
               <Sparkles className="mr-2 h-4 w-4 inline" />
-              AI-Powered Emotional Wellness
+              AI-Powered Journaling Platform
             </Badge>
             <h2 className="text-6xl md:text-7xl font-bold text-balance leading-tight text-foreground">
               Your Digital <span className="text-primary">Sanctuary</span>
@@ -521,7 +527,7 @@ export default function LandingPage() {
               className="bg-primary hover:bg-primary/90 text-lg px-8 py-6 text-white font-medium"
             >
               <Sparkles className="mr-2 h-5 w-5" />
-              Start Your Journey
+              Get Started{" "}
             </Button>
             <Button
               onClick={() =>
