@@ -507,9 +507,10 @@ export default function LandingPage() {
               Your Digital <span className="text-primary">Sanctuary</span>
             </h2>
             <p className="text-xl text-muted-foreground text-balance max-w-3xl mx-auto leading-relaxed">
-              Journal your thoughts, receive AI-powered emotional insights, and
-              connect with a supportive community. Share openly or anonymously
-              in a professional, minimal environment.
+              A calm space to journal, understand your emotions, and write with
+              music that matches your mood. FeelDiary combines private
+              journaling with AI insights to support your emotional wellness
+              journey.
             </p>
           </div>
 
