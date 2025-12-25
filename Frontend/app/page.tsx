@@ -119,12 +119,17 @@ export default function LandingPage() {
       // finalize UI state
       setShowOnboarding(false);
       setShowSignIn(false);
-      setUsername("");
-      setPassword("");
-      setSelectedLanguages([]);
-      setArtists([]);
+      // setUsername("");
+      // setPassword("");
+      // setSelectedLanguages([]);
+      // setArtists([]);
+      toast("You can now log in with your credentials.", {
+        position: "top-center",
+        duration: 4000,
+        type: "info",
+      });
       // Optionally navigate to home or login flow
-      router.push("/home");
+      // router.push("/home");
     } catch (error) {
       toast("Registration Failed", {
         description: "Unable to create account. Please try again.",
